@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Users - CRUD API{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h2>Users</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Address</th>
+                    <th>Books</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.name }}</td>
+                    <td>{{ user.email or '-' }}</td>
+                    <td>{{ user.phone or '-' }}</td>
+                    <td>{{ user.address or '-' }}</td>
+                    <td>
+                        {% for book in user.books %}
+                        <span class="badge bg-secondary">{{ book.title }}</span>
+                        {% endfor %}
+                        {% if not user.books %}
+                        No books
+                        {% endif %}
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-warning" onclick="editUser({{ user.id }}, '{{ user.name }}', '{{ user.email or '' }}', '{{ user.phone or '' }}', '{{ user.address or '' }}')">Edit</button>
+                        <form method="POST" action="/users/{{ user.id }}/delete" style="display: inline;">
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete user?')">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-4">
+        <div id="userForm">
+            <h3 id="formTitle">Add User</h3>
+            <form id="userFormElement" method="POST" action="/users">
+                <input type="hidden" id="userId" name="id">
+                <div class="mb-3">
+                    <label for="name" class="form-label">Name *</label>
+                    <input type="text" class="form-control" id="name" name="name" required>
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="email" name="email">
+                </div>
+                <div class="mb-3">
+                    <label for="phone" class="form-label">Phone</label>
+                    <input type="tel" class="form-control" id="phone" name="phone">
+                </div>
+                <div class="mb-3">
+                    <label for="address" class="form-label">Address</label>
+                    <textarea class="form-control" id="address" name="address" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" id="submitBtn">Add User</button>
+                <button type="button" class="btn btn-secondary" onclick="resetForm()">Cancel</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function editUser(id, name, email, phone, address) {
+    document.getElementById('formTitle').textContent = 'Edit User';
+    document.getElementById('userId').value = id;
+    document.getElementById('name').value = name;
+    document.getElementById('email').value = email;
+    document.getElementById('phone').value = phone;
+    document.getElementById('address').value = address;
+    document.getElementById('userFormElement').action = '/users/' + id;
+    document.getElementById('submitBtn').textContent = 'Update User';
+}
+
+function resetForm() {
+    document.getElementById('formTitle').textContent = 'Add User';
+    document.getElementById('userId').value = '';
+    document.getElementById('name').value = '';
+    document.getElementById('email').value = '';
+    document.getElementById('phone').value = '';
+    document.getElementById('address').value = '';
+    document.getElementById('userFormElement').action = '/users';
+    document.getElementById('submitBtn').textContent = 'Add User';
+}
+</script>
+{% endblock %}

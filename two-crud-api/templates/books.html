@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Books - CRUD API{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h2>Books</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Author</th>
+                    <th>Genre</th>
+                    <th>Description</th>
+                    <th>Users</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for book in books %}
+                <tr>
+                    <td>{{ book.id }}</td>
+                    <td>{{ book.title }}</td>
+                    <td>{{ book.author or '-' }}</td>
+                    <td>{{ book.genre or '-' }}</td>
+                    <td>{{ book.description or '-' }}</td>
+                    <td>
+                        {% for user in book.users %}
+                        <span class="badge bg-info">{{ user.name }}</span>
+                        {% endfor %}
+                        {% if not book.users %}
+                        No users
+                        {% endif %}
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-warning" onclick="editBook({{ book.id }}, '{{ book.title }}', '{{ book.author or '' }}', '{{ book.genre or '' }}', '{{ book.description or '' }}')">Edit</button>
+                        <form method="POST" action="/books/{{ book.id }}/delete" style="display: inline;">
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete book?')">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-4">
+        <div id="bookForm">
+            <h3 id="formTitle">Add Book</h3>
+            <form id="bookFormElement" method="POST" action="/books">
+                <input type="hidden" id="bookId" name="id">
+                <div class="mb-3">
+                    <label for="title" class="form-label">Title *</label>
+                    <input type="text" class="form-control" id="title" name="title" required>
+                </div>
+                <div class="mb-3">
+                    <label for="author" class="form-label">Author</label>
+                    <input type="text" class="form-control" id="author" name="author">
+                </div>
+                <div class="mb-3">
+                    <label for="genre" class="form-label">Genre</label>
+                    <input type="text" class="form-control" id="genre" name="genre">
+                </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" id="submitBtn">Add Book</button>
+                <button type="button" class="btn btn-secondary" onclick="resetForm()">Cancel</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function editBook(id, title, author, genre, description) {
+    document.getElementById('formTitle').textContent = 'Edit Book';
+    document.getElementById('bookId').value = id;
+    document.getElementById('title').value = title;
+    document.getElementById('author').value = author;
+    document.getElementById('genre').value = genre;
+    document.getElementById('description').value = description;
+    document.getElementById('bookFormElement').action = '/books/' + id;
+    document.getElementById('submitBtn').textContent = 'Update Book';
+}
+
+function resetForm() {
+    document.getElementById('formTitle').textContent = 'Add Book';
+    document.getElementById('bookId').value = '';
+    document.getElementById('title').value = '';
+    document.getElementById('author').value = '';
+    document.getElementById('genre').value = '';
+    document.getElementById('description').value = '';
+    document.getElementById('bookFormElement').action = '/books';
+    document.getElementById('submitBtn').textContent = 'Add Book';
+}
+</script>
+{% endblock %}
