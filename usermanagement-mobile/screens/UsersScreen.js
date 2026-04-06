@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, Button, TextInput, StyleSheet, Alert } from 'react-native';
 import axios from 'axios';
 
-const API_BASE = 'http://127.0.0.1:8080';
+const API_BASE = 'http://localhost:8080';
 
 export default function UsersScreen({ navigation }) {
   const [users, setUsers] = useState([]);
@@ -27,6 +27,9 @@ export default function UsersScreen({ navigation }) {
 
   const createUser = async () => {
     if (!name.trim()) return Alert.alert('Validate', 'Name is required');
+    if (email && !/^\S+@\S+\.\S+$/.test(email)) {
+      return Alert.alert('Validate', 'Enter a valid email address');
+    }
     try {
       await axios.post(`${API_BASE}/users`, { name, email, phone, address });
       setName('');

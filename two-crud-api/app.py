@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request, abort, render_template, redirect, url
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import os
+import re
 
 app = Flask(__name__)
 
@@ -20,6 +21,12 @@ else:
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+
+def is_valid_email(email):
+    if not email:
+        return False
+    email_regex = r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'
+    return re.match(email_regex, email) is not None
 
 # Association table for many-to-many relationship
 user_books = db.Table('user_books',
@@ -75,6 +82,10 @@ def create_user():
     data = request.get_json() or {}
     if 'name' not in data:
         return jsonify({'error': 'name is required'}), 400
+    email = data.get('email')
+    if email:
+        if not is_valid_email(email):
+            return jsonify({'error': 'email is not valid'}), 400
     user = User(
         name=data['name'], 
         email=data.get('email'),
@@ -101,6 +112,8 @@ def update_user(user_id):
     if 'name' in data:
         user.name = data['name']
     if 'email' in data:
+        if data['email'] and not is_valid_email(data['email']):
+            return jsonify({'error': 'email is not valid'}), 400
         user.email = data['email']
     if 'phone' in data:
         user.phone = data['phone']
@@ -221,36 +234,6 @@ def delete_book(book_id):
         'users': []
     })
 
-if __name__ == '__main__':
-    with app.app_context():
-        if os.getenv('TESTING'):
-            db.drop_all()
-        db.create_all()
-        # Add sample data if tables are empty
-        if not User.query.first():
-            alice = User(name="Alice Johnson", email="alice@example.com", phone="123-456-7890", address="123 Main St")
-            bob = User(name="Bob Smith", email="bob@example.com", phone="987-654-3210", address="456 Oak Ave")
-            charlie = User(name="Charlie Brown", email="charlie@example.com", phone="555-123-4567", address="789 Pine Rd")
-            db.session.add_all([alice, bob, charlie])
-            db.session.commit()
-            
-            # Add books
-            book1 = Book(title="1984", author="George Orwell", genre="Dystopian", description="A classic novel about totalitarianism")
-            book2 = Book(title="To Kill a Mockingbird", author="Harper Lee", genre="Fiction", description="A story of racial injustice")
-            book3 = Book(title="The Great Gatsby", author="F. Scott Fitzgerald", genre="Classic", description="The American Dream in the Jazz Age")
-            book4 = Book(title="Pride and Prejudice", author="Jane Austen", genre="Romance", description="A romantic novel of manners")
-            db.session.add_all([book1, book2, book3, book4])
-            db.session.commit()
-            
-            # Link users to books
-            alice.books.append(book1)
-            alice.books.append(book2)
-            bob.books.append(book3)
-            charlie.books.append(book4)
-            charlie.books.append(book1)
-            db.session.commit()
-    app.run(debug=True, port=8080)
-
 @app.route('/users/<int:user_id>/books', methods=['POST'])
 def assign_book_to_user(user_id):
     user = db.session.get(User, user_id)
@@ -293,11 +276,17 @@ def users_ui():
             user = db.session.get(User, int(data['id']))
             if user:
                 user.name = data['name']
-                user.email = data.get('email')
+                email = data.get('email')
+                if email and not is_valid_email(email):
+                    return redirect(url_for('users_ui'))
+                user.email = email
                 db.session.commit()
         else:
             # Create
-            user = User(name=data['name'], email=data.get('email'))
+            email = data.get('email')
+            if email and not is_valid_email(email):
+                return redirect(url_for('users_ui'))
+            user = User(name=data['name'], email=email)
             db.session.add(user)
             db.session.commit()
         return redirect(url_for('users_ui'))
@@ -341,3 +330,34 @@ def delete_book_ui(book_id):
         db.session.delete(book)
         db.session.commit()
     return redirect(url_for('books_ui'))
+
+
+if __name__ == '__main__':
+    with app.app_context():
+        if os.getenv('TESTING'):
+            db.drop_all()
+        db.create_all()
+        # Add sample data if tables are empty
+        if not User.query.first():
+            alice = User(name="Alice Johnson", email="alice@example.com", phone="123-456-7890", address="123 Main St")
+            bob = User(name="Bob Smith", email="bob@example.com", phone="987-654-3210", address="456 Oak Ave")
+            charlie = User(name="Charlie Brown", email="charlie@example.com", phone="555-123-4567", address="789 Pine Rd")
+            db.session.add_all([alice, bob, charlie])
+            db.session.commit()
+            
+            # Add books
+            book1 = Book(title="1984", author="George Orwell", genre="Dystopian", description="A classic novel about totalitarianism")
+            book2 = Book(title="To Kill a Mockingbird", author="Harper Lee", genre="Fiction", description="A story of racial injustice")
+            book3 = Book(title="The Great Gatsby", author="F. Scott Fitzgerald", genre="Classic", description="The American Dream in the Jazz Age")
+            book4 = Book(title="Pride and Prejudice", author="Jane Austen", genre="Romance", description="A romantic novel of manners")
+            db.session.add_all([book1, book2, book3, book4])
+            db.session.commit()
+            
+            # Link users to books
+            alice.books.append(book1)
+            alice.books.append(book2)
+            bob.books.append(book3)
+            charlie.books.append(book4)
+            charlie.books.append(book1)
+            db.session.commit()
+    app.run(debug=True, port=8080)
