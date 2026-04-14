@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "CBSE 2026 Result Notifier",
+  "description": "Checks results.cbse.nic.in and alerts when 2026 result announcements appear.",
+  "version": "1.0.0",
+  "permissions": [
+    "alarms",
+    "notifications",
+    "storage",
+    "offscreen"
+  ],
+  "host_permissions": [
+    "https://results.cbse.nic.in/*",
+    "https://api.telegram.org/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "CBSE 2026 Result Notifier",
+    "default_popup": "popup.html"
+  }
+}

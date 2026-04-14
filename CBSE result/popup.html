@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CBSE Notifier</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 12px;
+        width: 300px;
+        color: #1f1f1f;
+      }
+      h1 {
+        font-size: 16px;
+        margin: 0 0 8px;
+      }
+      p {
+        margin: 8px 0;
+        font-size: 13px;
+        line-height: 1.4;
+      }
+      button {
+        border: none;
+        background: #1a73e8;
+        color: #fff;
+        padding: 8px 10px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+      }
+      button:hover {
+        background: #1558b0;
+      }
+      .status {
+        margin-top: 10px;
+        padding: 8px;
+        background: #f4f7ff;
+        border-radius: 6px;
+      }
+      .small {
+        color: #5f6368;
+        font-size: 12px;
+      }
+      .telegram-config {
+        margin-top: 10px;
+        padding: 8px;
+        border: 1px solid #dadce0;
+        border-radius: 6px;
+      }
+      .telegram-config h2 {
+        margin: 0 0 8px;
+        font-size: 13px;
+      }
+      label {
+        display: block;
+        font-size: 12px;
+        margin: 8px 0 4px;
+      }
+      input[type="text"],
+      input[type="password"] {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 7px;
+        border: 1px solid #c8c8c8;
+        border-radius: 5px;
+        font-size: 12px;
+      }
+      .inline {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .inline label {
+        margin: 0;
+      }
+      #saveTelegramConfig {
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>CBSE 2026 Result Notifier</h1>
+    <p>Checks `results.cbse.nic.in` every 15 minutes.</p>
+    <button id="checkNow">Check Now</button>
+    <div class="status">
+      <p id="matchStatus">Status: loading...</p>
+      <p id="lastChecked" class="small"></p>
+      <p id="errorLine" class="small"></p>
+    </div>
+    <div class="telegram-config">
+      <h2>Telegram Alerts</h2>
+      <div class="inline">
+        <input id="telegramEnabled" type="checkbox" />
+        <label for="telegramEnabled">Enable Telegram alert</label>
+      </div>
+      <label for="telegramBotToken">Bot Token</label>
+      <input id="telegramBotToken" type="password" placeholder="123456789:AA..." />
+      <label for="telegramChatIds">Chat IDs (comma separated)</label>
+      <input id="telegramChatIds" type="text" placeholder="123456789,987654321" />
+      <button id="saveTelegramConfig">Save Telegram Settings</button>
+      <p id="telegramSaveStatus" class="small"></p>
+    </div>
+    <script src="popup.js"></script>
+  </body>
+  </html>
